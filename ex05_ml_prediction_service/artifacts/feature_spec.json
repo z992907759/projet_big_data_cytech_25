@@ -1,0 +1,48 @@
+{
+  "bucket": "nyc-cleaned",
+  "prefix": "year=2025/month=01/",
+  "rmse": 2.3385323177002992,
+  "feature_cols": [
+    "passenger_count",
+    "trip_distance",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tip_amount",
+    "tolls_amount",
+    "improvement_surcharge",
+    "congestion_surcharge",
+    "pickup_hour",
+    "pickup_dayofweek",
+    "pickup_month",
+    "VendorID",
+    "RatecodeID",
+    "payment_type",
+    "PULocationID",
+    "DOLocationID",
+    "store_and_fwd_flag"
+  ],
+  "numeric_cols": [
+    "passenger_count",
+    "trip_distance",
+    "fare_amount",
+    "extra",
+    "mta_tax",
+    "tip_amount",
+    "tolls_amount",
+    "improvement_surcharge",
+    "congestion_surcharge",
+    "pickup_hour",
+    "pickup_dayofweek",
+    "pickup_month"
+  ],
+  "categorical_cols": [
+    "VendorID",
+    "RatecodeID",
+    "payment_type",
+    "PULocationID",
+    "DOLocationID",
+    "store_and_fwd_flag"
+  ],
+  "target": "total_amount"
+}

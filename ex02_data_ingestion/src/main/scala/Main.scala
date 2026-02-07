@@ -28,6 +28,9 @@ object Main {
 
     import spark.implicits._
 
+    // Helper "isEmpty" compatible toutes versions Spark
+    def isNotEmpty(df: DataFrame): Boolean = df.take(1).nonEmpty
+
     // 1) LECTURE (Source Minio Bronze)
     println(s"[EX2] Reading raw parquet: $rawPath")
     val rawDF = spark.read.parquet(rawPath)
@@ -56,7 +59,7 @@ object Main {
       .parquet(cleanedPath)
 
     // 3) BRANCHE 2 : DWH Postgres
-    val jdbcUrl = sys.env.getOrElse("JDBC_URL", "jdbc:postgresql://localhost:5432/postgres")
+    val jdbcUrl  = sys.env.getOrElse("JDBC_URL", "jdbc:postgresql://localhost:5432/postgres")
     val jdbcUser = sys.env.getOrElse("JDBC_USER", "postgres")
     val jdbcPass = sys.env.getOrElse("JDBC_PASSWORD", "password")
 
@@ -73,7 +76,7 @@ object Main {
         case e: Exception =>
           throw new RuntimeException(
             s"[EX2] Cannot read table '$table'. Did you run EX3 creation.sql first? " +
-            s"JDBC_URL=$jdbcUrl. Root error: ${e.getMessage}",
+              s"JDBC_URL=$jdbcUrl. Root error: ${e.getMessage}",
             e
           )
       }
@@ -90,17 +93,17 @@ object Main {
     val newVendor = cleanedDF.select($"VendorID".cast("int").as("vendor_id"))
       .na.drop().distinct()
       .join(existingVendor, Seq("vendor_id"), "left_anti")
-    if (!newVendor.isEmpty) newVendor.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_vendor", props)
+    if (isNotEmpty(newVendor)) newVendor.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_vendor", props)
 
     val newRate = cleanedDF.select($"RatecodeID".cast("int").as("rate_code_id"))
       .na.drop().distinct()
       .join(existingRate, Seq("rate_code_id"), "left_anti")
-    if (!newRate.isEmpty) newRate.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_rate_code", props)
+    if (isNotEmpty(newRate)) newRate.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_rate_code", props)
 
     val newPay = cleanedDF.select($"payment_type".cast("int").as("payment_type_id"))
       .na.drop().distinct()
       .join(existingPay, Seq("payment_type_id"), "left_anti")
-    if (!newPay.isEmpty) newPay.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_payment_type", props)
+    if (isNotEmpty(newPay)) newPay.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_payment_type", props)
 
     val allLoc = cleanedDF
       .select($"PULocationID".cast("int").as("location_id"))
@@ -108,22 +111,23 @@ object Main {
       .na.drop().distinct()
 
     val newLoc = allLoc.join(existingLoc, Seq("location_id"), "left_anti")
-    if (!newLoc.isEmpty) newLoc.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_location", props)
+    if (isNotEmpty(newLoc)) newLoc.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_location", props)
 
     // dim_datetime : pickup + dropoff timestamps
     val pickupTsDF  = cleanedDF.select($"tpep_pickup_datetime".cast("timestamp").as("ts"))
     val dropoffTsDF = cleanedDF.select($"tpep_dropoff_datetime".cast("timestamp").as("ts"))
-    val allTsDF = pickupTsDF.union(dropoffTsDF).na.drop().distinct()
+    val allTsDF     = pickupTsDF.union(dropoffTsDF).na.drop().distinct()
 
     val newTs = allTsDF.join(existingDt, Seq("ts"), "left_anti")
       .withColumn("date", to_date($"ts"))
-      .withColumn("year", year($"ts"))
-      .withColumn("month", month($"ts"))
+      // IMPORTANT: year/month doivent être les fonctions Spark, pas tes variables "year"/"month"
+      .withColumn("year", org.apache.spark.sql.functions.year($"ts"))
+      .withColumn("month", org.apache.spark.sql.functions.month($"ts"))
       .withColumn("day", dayofmonth($"ts"))
       .withColumn("hour", hour($"ts"))
       .withColumn("dow", dayofweek($"ts"))
 
-    if (!newTs.isEmpty) newTs.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_datetime", props)
+    if (isNotEmpty(newTs)) newTs.write.mode(SaveMode.Append).jdbc(jdbcUrl, "dwh.dim_datetime", props)
 
     // 3.c) Recharger dims avec surrogate keys
     val dimVendor = readTable("dwh.dim_vendor").select($"vendor_key", $"vendor_id")
@@ -160,7 +164,7 @@ object Main {
     val dropoffDim = dimDt2.withColumnRenamed("ts", "dropoff_ts")
       .withColumnRenamed("datetime_key", "dropoff_datetime_key")
 
-    val withPickupKey = withDoLoc.join(pickupDim, Seq("pickup_ts"), "left")
+    val withPickupKey  = withDoLoc.join(pickupDim, Seq("pickup_ts"), "left")
     val withDropoffKey = withPickupKey.join(dropoffDim, Seq("dropoff_ts"), "left")
 
     // Sélection finale fact_trip (selon  l'ex03)
@@ -194,3 +198,4 @@ object Main {
     spark.stop()
   }
 }
+
