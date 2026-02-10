@@ -12,6 +12,14 @@ Ce projet implante une architecture Big Data complète pour le traitement, le st
 
 ---
 
+## Prérequis
+* Java 11 Eclipse Temurin
+* sbt via sdkman par exemple
+* uv téléchargeable avec la commande ```bash curl -LsSf https://astral.sh/uv/install.sh | sh ```
+* Docker
+
+---
+
 ## 🛠️ Guide d'installation et de lancement
 
 ### 1. Infrastructure (Docker)
@@ -23,6 +31,7 @@ docker-compose up -d --build
 # Vérifiez que les containers sont "Up"
 docker ps
 ```
+Si la commande ```bash docker-compose``` ne fonctionne pas utiliser ```bash docker compose``` sans le -.
 
 Accédez à l'interface MinIO [http://localhost:9001](http://localhost:9001/login) avec, pour notre exemple, comme identifiant "minio" pour mot de passe "minio123" et créez manuellement les buckets :
 - "nyc-raw"
@@ -53,7 +62,7 @@ docker exec -it postgres-db psql -U myuser -d taxidb -c "SELECT count(*) FROM dw
 
 ```bash
 cd ../ex05_ml_prediction_service
-uv venv
+uv venv .venv --python 3.11
 source .venv/bin/activate
 uv pip install -r requirements.txt
 ```
