@@ -24,7 +24,21 @@ SPEC_PATH = ARTIFACTS_DIR / "feature_spec.json"
 
 
 def _rmse(y_true: np.ndarray, y_pred: np.ndarray) -> float:
-    """Compute RMSE."""
+    """
+    Calculate the Root Mean Squared Error.
+
+    Parameters
+    ----------
+    y_true : np.ndarray
+        Ground truth target values.
+    y_pred : np.ndarray
+        Estimated target values.
+
+    Returns
+    -------
+    float
+        The calculated RMSE value.
+    """
     return float(np.sqrt(mean_squared_error(y_true, y_pred)))
 
 
@@ -42,7 +56,7 @@ def main() -> None:
 
     # --- 1) Load data from MinIO (data.py returns ONLY a DataFrame)
     bucket = os.getenv("MINIO_BUCKET", "nyc-cleaned")
-    prefix = os.getenv("MINIO_PREFIX", "year=2025/month=01/")
+    prefix = os.getenv("MINIO_PREFIX", "year=2024/month=01/")
     df = load_parquets_from_minio(bucket=bucket, prefix=prefix)
 
     # --- 2) Build dataset + spec (features.py returns X, y, spec)
@@ -124,4 +138,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

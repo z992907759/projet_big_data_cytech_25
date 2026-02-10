@@ -56,7 +56,8 @@ def predict_one(record: Dict[str, Any]) -> float:
 def main() -> None:
     """
     CLI example:
-    uv run python -m src.predict '{"trip_distance":2.1,"passenger_count":1,"fare_amount":12.0,"PULocationID":"79","DOLocationID":"142","payment_type":"1","pickup_hour":10,"pickup_dayofweek":2,"pickup_month":1}'
+    uv run python -m src.predict \
+    '{"trip_distance":2.1,"passenger_count":1,"fare_amount":12.0,"PULocationID":"79","DOLocationID":"142","payment_type":"1","pickup_hour":10,"pickup_dayofweek":2,"pickup_month":1}'
     """
     import sys
     if len(sys.argv) < 2:

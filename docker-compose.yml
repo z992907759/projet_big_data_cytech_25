@@ -79,6 +79,27 @@ services:
     networks:
       - spark-network
 
+  postgres:
+    image: postgres:15
+    container_name: postgres-db
+    environment:
+      - POSTGRES_USER=myuser
+      - POSTGRES_PASSWORD=mypassword
+      - POSTGRES_DB=taxidb
+    ports:
+      - "5432:5432"
+    networks:
+      - spark-network
+    volumes:
+      # Montage des scripts d'initialisation (Etape 03)
+      - ./ex03_sql_table_creation/creation.sql:/docker-entrypoint-initdb.d/1-creation.sql
+      - ./ex03_sql_table_creation/insertion.sql:/docker-entrypoint-initdb.d/2-insertion.sql
+      # Volume pour persister les données même si on supprime le container
+      - postgres-data:/var/lib/postgresql/data
+
 networks:
   spark-network:
     driver: bridge
+    
+volumes:
+  postgres-data:
