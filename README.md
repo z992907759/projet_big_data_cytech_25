@@ -95,10 +95,15 @@ python -m pytest tests/test_pipeline.py
 
 ### 4. Démonstration
 
-Lancez l'application Streamlit :
+Démonstration de prédiction avec modèle :
 
 ```bash
 streamlit run streamlit_app/app.py
+```
+Dashboard exploration des données :
+
+```bash
+streamlit run ../ex04_dashboard/src/dashboard.py
 ```
 
 ---
