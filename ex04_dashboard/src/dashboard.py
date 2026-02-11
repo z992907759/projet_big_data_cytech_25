@@ -23,9 +23,9 @@ st.markdown(
 # -----------------------------
 PG_HOST = os.getenv("PG_HOST", "localhost")
 PG_PORT = int(os.getenv("PG_PORT", "5432"))
-PG_DB   = os.getenv("PG_DB", "bigdata")
-PG_USER = os.getenv("PG_USER", "postgres")
-PG_PASS = os.getenv("PG_PASS", "postgres")
+PG_DB   = os.getenv("PG_DB", "taxidb")
+PG_USER = os.getenv("PG_USER", "myuser")
+PG_PASS = os.getenv("PG_PASS", "mypassword")
 SCHEMA  = os.getenv("DWH_SCHEMA", "dwh")
 
 @st.cache_resource
@@ -452,3 +452,4 @@ def load_preview(n: int):
 
 st.subheader("Data preview")
 st.dataframe(load_preview(200), use_container_width=True)
+
