@@ -67,9 +67,9 @@ services:
       AIRFLOW__DATABASE__SQL_ALCHEMY_CONN: postgresql+psycopg2://airflow:airflow@airflow-db:5432/airflow
       AIRFLOW__CORE__FERNET_KEY: "0W4bRk5xQ0Y2Q1p3Z0xvN0p4b2ZxN0p4b2ZxN0p4b2Y="
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
+      - ./ex06_airflow/airflow/dags:/opt/airflow/dags
+      - ./ex06_airflow/airflow/logs:/opt/airflow/logs
+      - ./ex06_airflow/airflow/plugins:/opt/airflow/plugins
     entrypoint: ["/bin/bash", "-lc"]
     command:
       - |
@@ -101,9 +101,9 @@ services:
       PROJECT_DIR: ${PROJECT_DIR:-${PWD}}
       AIRFLOW_DOCKER_NETWORK: ${AIRFLOW_DOCKER_NETWORK:-bigdata_projet_spark-network}
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
+      - ./ex06_airflow/airflow/dags:/opt/airflow/dags
+      - ./ex06_airflow/airflow/logs:/opt/airflow/logs
+      - ./ex06_airflow/airflow/plugins:/opt/airflow/plugins
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "8080:8080"
@@ -125,9 +125,9 @@ services:
       PROJECT_DIR: ${PROJECT_DIR:-${PWD}}
       AIRFLOW_DOCKER_NETWORK: ${AIRFLOW_DOCKER_NETWORK:-bigdata_projet_spark-network}
     volumes:
-      - ./airflow/dags:/opt/airflow/dags
-      - ./airflow/logs:/opt/airflow/logs
-      - ./airflow/plugins:/opt/airflow/plugins
+      - ./ex06_airflow/airflow/dags:/opt/airflow/dags
+      - ./ex06_airflow/airflow/logs:/opt/airflow/logs
+      - ./ex06_airflow/airflow/plugins:/opt/airflow/plugins
       - /var/run/docker.sock:/var/run/docker.sock
     command: ["airflow", "scheduler"]
     restart: unless-stopped

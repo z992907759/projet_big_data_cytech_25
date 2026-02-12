@@ -77,6 +77,7 @@ python -m src.predict "{}"
 
 Le fichier `docker-compose.airflow.yml` orchestre MinIO + Airflow.
 Les buckets MinIO sont crees automatiquement (plus besoin de creation manuelle).
+Les fichiers Airflow de l'exercice sont dans `ex06_airflow/airflow/` (DAGs, logs, plugins).
 
 Depuis la racine du repo:
 ```bash
