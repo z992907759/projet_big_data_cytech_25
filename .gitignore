@@ -51,3 +51,19 @@ minio-data
 
 ### Hadoop ###
 hadoop
+
+### EX01 downloaded parquet ###
+ex01_data_retrieval/data/raw/yellow_tripdata_*.parquet
+
+### Python cache ###
+__pycache__/
+*.pyc
+
+### Airflow runtime ###
+airflow/logs/
+
+### Local IDE/runtime ###
+.metals/
+
+### ML artifacts ###
+ex05_ml_prediction_service/artifacts/model.joblib

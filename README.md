@@ -1,131 +1,118 @@
 # NYC Taxi Data Pipeline & ML Prediction
 
-Ce projet implante une architecture Big Data complète pour le traitement, le stockage et l'analyse prédictive des données de taxis new-yorkais. Il couvre l'ensemble du cycle de vie de la donnée : de la collecte brute au dashboard de visualisation, en passant par un Data Warehouse et un modèle de Machine Learning performant.
+Projet Big Data de bout en bout sur les courses de taxi NYC:
+- EX1: collecte des parquet bruts
+- EX2: nettoyage + ingestion DWH
+- EX3: schema SQL (creation + insertion reference)
+- EX4: dashboard
+- EX5: entrainement + prediction ML
+- EX6: orchestration complete via Airflow
 
-## 🚀 Architecture du Projet
+## Architecture
+- Data Lake: MinIO (`nyc-raw`, `nyc-cleaned`)
+- ETL: Spark + Scala
+- DWH: PostgreSQL (schema `dwh`)
+- Viz: Streamlit
+- ML: scikit-learn
+- Orchestration: Airflow 2.9
 
-* **Data Lake (MinIO)** : Stockage des données brutes (Bronze) et nettoyées (Silver).
-* **ETL (Apache Spark / Scala)** : Nettoyage, filtrage et ingestion massive.
-* **Data Warehouse (PostgreSQL)** : Modélisation en étoile (Star Schema) pour l'analyse.
-* **Machine Learning (Scikit-Learn)** : Prédiction du montant total des courses.
-* **Visualisation (Streamlit)** : Démonstration de l'utilisation du modèle
+## Prerequis
+- Docker / Docker Compose
+- Java 11
+- sbt
+- uv (pour EX5 en local)
 
----
-
-## Prérequis
-* Java 11 Eclipse Temurin
-* sbt via sdkman par exemple
-* uv téléchargeable avec la commande ```curl -LsSf https://astral.sh/uv/install.sh | sh```
-* Docker
-
----
-
-## 🛠️ Guide d'installation et de lancement
-
-### 1. Infrastructure (Docker)
-
-Lancez les services MinIO et PostgreSQL :
-
+## 1) Lancer l'infra de base (MinIO + Postgres metier)
 ```bash
-docker-compose up -d --build
-# Vérifiez que les containers sont "Up"
+docker compose up -d --build
 docker ps
 ```
-Si la commande ```docker-compose``` ne fonctionne pas utiliser ```docker compose``` sans le -.
 
-Accédez à l'interface MinIO [http://localhost:9001](http://localhost:9001/login) avec, pour notre exemple, comme identifiant "minio" pour mot de passe "minio123" et créez manuellement les buckets :
-- "nyc-raw"
-- "nyc-cleaned"
+Acces MinIO:
+- API: `http://localhost:9000`
+- Console: `http://localhost:9001`
+- Credentials par defaut: `minio` / `minio123`
 
-### 2. Collecte et Ingestion (Scala/Spark)
-#### Étape 1 : Récupération des données brutes
+## 2) Lancer EX1-EX5 manuellement (optionnel)
 
+EX1:
 ```bash
 cd ex01_data_retrieval
 sbt run
 ```
 
-#### Étape 2 : Nettoyage et Ingestion (DWH)
-
+EX2:
 ```bash
 cd ../ex02_data_ingestion
 sbt run
 ```
 
-Vérification du volume :
+EX3:
 ```bash
-docker exec -it postgres-db psql -U myuser -d taxidb -c "SELECT count(*) FROM dwh.fact_trip;"
+cd ..
+docker exec -i postgres-db psql -U myuser -d taxidb < ex03_sql_table_creation/creation.sql
+docker exec -i postgres-db psql -U myuser -d taxidb < ex03_sql_table_creation/insertion.sql
 ```
 
-### 3. Machine Learning & Qualité (Python)
-#### Préparez l'environnement et entraînez le modèle :
+EX4:
+```bash
+cd ex04_dashboard
+python src/dashboard.py
+```
 
+EX5 (local):
 ```bash
 cd ../ex05_ml_prediction_service
 uv venv .venv --python 3.11
 source .venv/bin/activate
 uv pip install -r requirements.txt
-```
-
-#### Configuration des accès MinIO
-```bash
 export MINIO_ENDPOINT="http://localhost:9000"
 export MINIO_ACCESS_KEY="minio"
 export MINIO_SECRET_KEY="minio123"
-```
-
-#### Entraînement
-```bash
 python -m src.train
-
-```
-#### Vérifications Qualité :
-Linting (PEP 8)
-```bash
-flake8 --max-line-length=100 src/
+python -m src.predict "{}"
 ```
 
-#### Tests Unitaires
+## 3) EX6 - Pipeline automatise avec Airflow (recommande)
+
+Le fichier `docker-compose.airflow.yml` orchestre MinIO + Airflow.
+Les buckets MinIO sont crees automatiquement (plus besoin de creation manuelle).
+
+Depuis la racine du repo:
 ```bash
-export MINIO_BUCKET_CLEAN="nyc-cleaned"
-export YEAR="2024"
-export MONTH="01"
-python -m pytest tests/test_pipeline.py
+export PROJECT_DIR="$(pwd)"
+export AIRFLOW_DOCKER_NETWORK="bigdata_projet_spark-network"
+docker compose -f docker-compose.airflow.yml up -d
 ```
 
-### 4. Démonstration
+UI Airflow:
+- `http://localhost:8080`
+- login: `admin`
+- password: `admin`
 
-Démonstration de prédiction avec modèle :
-
+Declenchement du DAG EX6:
 ```bash
-streamlit run streamlit_app/app.py
-```
-Dashboard exploration des données :
-
-```bash
-streamlit run ../ex04_dashboard/src/dashboard.py
+docker exec airflow-scheduler airflow dags trigger ex6_pipeline
 ```
 
----
-
-## 📈 Résultats et Performances
-
-* Volume de données : Ingestion réussie de plusieurs millions de lignes dans le Data Warehouse PostgreSQL.
-
-* Précision du Modèle : RMSE de 4.25 obtenu sur la prédiction du total_amount (Cible : < 10).
-
-* Modèle utilisé : HistGradientBoostingRegressor (robuste aux grands volumes tabulaires).
-
-* Qualité : Documentation au format NumpyDoc et conformité PEP 8.
-
----
-
-## 🧹 Nettoyage
-Pour arrêter les services et supprimer les données persistantes (volumes) :
-
+Suivi d'un run:
 ```bash
-deactivate
-rm -rf .venv/
-cd ..
-docker-compose down -v
+docker exec airflow-scheduler airflow dags list-runs -d ex6_pipeline -o table
+docker exec airflow-scheduler airflow tasks states-for-dag-run ex6_pipeline <run_id>
+```
+
+## Notes d'execution EX6
+- Le DAG `ex6_pipeline` execute EX1 -> EX2(Q1) -> EX3(Q1) -> EX2(Q2) -> EX3(Q2) -> EX4 -> EX5.
+- La configuration par defaut est stabilisee pour un run reproductible en environnement local (mois `01`).
+- Les commandes sont overrideables via variables d'environnement (`EX1_CMD`, `EX2_Q1_CMD`, `EX2_Q2_CMD`, etc.).
+
+## Verification rapide DWH
+```bash
+docker exec -it postgres-db psql -U myuser -d taxidb -c "SELECT COUNT(*) FROM dwh.fact_trip;"
+```
+
+## Nettoyage
+```bash
+docker compose down -v
+docker compose -f docker-compose.airflow.yml down -v
 ```

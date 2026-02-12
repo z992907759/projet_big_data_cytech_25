@@ -8,7 +8,18 @@ with DAG(
     schedule=None,
     catchup=False,
 ) as dag:
-    BashOperator(
+
+    hello = BashOperator(
         task_id="hello",
-        bash_command="echo Airflow is running!",
+        bash_command="""
+        echo "Airflow is running!"
+        echo "Current user:"
+        whoami
+        echo "Current directory:"
+        pwd
+        echo "Project folder content:"
+        ls -la /opt/project || echo "No /opt/project mount found"
+        echo "Docker socket check:"
+        ls -la /var/run/docker.sock || echo "Docker socket not mounted"
+        """,
     )
