@@ -57,7 +57,10 @@ docker exec -i postgres-db psql -U myuser -d taxidb < ex03_sql_table_creation/in
 EX4:
 ```bash
 cd ex04_dashboard
+# dashboard Streamlit (EX4)
 python src/dashboard.py
+# generation PDF (optionnel)
+python src/create_pdf.py
 ```
 
 EX5 (local):
@@ -106,6 +109,7 @@ docker exec airflow-scheduler airflow tasks states-for-dag-run ex6_pipeline <run
 - Le DAG `ex6_pipeline` execute EX1 -> EX2(Q1) -> EX3(Q1) -> EX2(Q2) -> EX3(Q2) -> EX4 -> EX5.
 - La configuration par defaut est stabilisee pour un run reproductible en environnement local (mois `01`).
 - Les commandes sont overrideables via variables d'environnement (`EX1_CMD`, `EX2_Q1_CMD`, `EX2_Q2_CMD`, etc.).
+- EX4 dans ce repo est base sur `ex04_dashboard/src/dashboard.py`; la generation PDF est disponible via `ex04_dashboard/src/create_pdf.py`.
 
 ## Verification rapide DWH
 ```bash

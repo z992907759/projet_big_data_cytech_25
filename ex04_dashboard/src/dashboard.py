@@ -4,9 +4,6 @@ import streamlit as st
 from sqlalchemy import create_engine, text
 import plotly.express as px
 
-# -----------------------------
-# App layout
-# -----------------------------
 st.set_page_config(page_title="NYC Taxi Trip Dashboard", layout="wide")
 st.title("NYC Taxi Trip Dashboard")
 
@@ -18,9 +15,6 @@ st.markdown(
 )
 
 
-# -----------------------------
-# Database connection
-# -----------------------------
 PG_HOST = os.getenv("PG_HOST", "localhost")
 PG_PORT = int(os.getenv("PG_PORT", "5432"))
 PG_DB   = os.getenv("PG_DB", "taxidb")
@@ -35,9 +29,6 @@ def get_engine():
 
 engine = get_engine()
 
-# -----------------------------
-# Schema introspection
-# -----------------------------
 @st.cache_data(ttl=60)
 def get_columns(table: str) -> pd.DataFrame:
     q = text("""
@@ -55,9 +46,6 @@ def pick(col_list, candidates):
             return c
     return None
 
-# -----------------------------
-# Tables & columns
-# -----------------------------
 FACT = "fact_trip"
 DIM_DT = "dim_datetime"
 DIM_LOC = "dim_location"
@@ -96,7 +84,6 @@ rate_cols = get_columns(DIM_RATE)["column_name"].tolist()
 RATE_KEY = pick(rate_cols, ["rate_code_key"])
 RATE_LABEL = pick(rate_cols, ["rate_code_name", "rate_code", "label", "name"])
 
-# Hard stops if essential columns missing
 missing = []
 if not DT_KEY: missing.append(f"{DIM_DT}.datetime_key")
 if not DT_TIME: missing.append(f"{DIM_DT}.timestamp/date column")
@@ -107,9 +94,6 @@ if missing:
     st.error("Missing required columns:\n- " + "\n- ".join(missing))
     st.stop()
 
-# -----------------------------
-# Filters
-# -----------------------------
 @st.cache_data(ttl=60)
 def get_time_bounds():
     q = text(f"SELECT MIN({DT_TIME}), MAX({DT_TIME}) FROM {SCHEMA}.{DIM_DT}")
@@ -135,9 +119,6 @@ de = pd.to_datetime(date_range[1]) + pd.Timedelta(days=1)
 where_sql = f"d.{DT_TIME} >= :ds AND d.{DT_TIME} < :de"
 params = {"ds": ds, "de": de}
 
-# -----------------------------
-# KPI
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_kpi():
     extras = []
@@ -178,9 +159,6 @@ if TIP_COL:
 
 st.divider()
 
-# -----------------------------
-# Core trend + payment mix
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_trips_timeseries():
     day_expr = f"d.{DT_DATE}" if DT_DATE else f"DATE(d.{DT_TIME})"
@@ -236,9 +214,6 @@ with c2:
 
 st.divider()
 
-# -----------------------------
-# Operational load: hour + day-of-week
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_trips_by_hour():
     q = text(f"""
@@ -294,9 +269,6 @@ with c4:
 
 st.divider()
 
-# -----------------------------
-# Service profile: avg distance + passenger mix
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_avg_distance_ts():
     day_expr = f"d.{DT_DATE}" if DT_DATE else f"DATE(d.{DT_TIME})"
@@ -353,9 +325,6 @@ with c6:
 
 st.divider()
 
-# -----------------------------
-# Tips (decision-oriented) + rate code
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_top_tips_locations():
     if not TIP_COL:
@@ -425,9 +394,6 @@ with c8:
 
 st.divider()
 
-# -----------------------------
-# Data preview
-# -----------------------------
 @st.cache_data(ttl=60)
 def load_preview(n: int):
     extras = f", f.{TIP_COL} AS tip_amount" if TIP_COL else ""

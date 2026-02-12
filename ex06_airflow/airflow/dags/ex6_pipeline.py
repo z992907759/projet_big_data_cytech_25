@@ -56,7 +56,7 @@ EX4_CMD = os.environ.get(
     "bash -lc "
     f"'cd {TARGET_PATH}/ex04_dashboard "
     "&& python -V "
-    "&& pip install --no-cache-dir pandas streamlit sqlalchemy psycopg2-binary plotly "
+    "&& pip install --no-cache-dir pandas streamlit sqlalchemy psycopg2-binary plotly matplotlib "
     f"&& export PG_HOST=\"{PGHOST}\" PG_PORT=\"{PGPORT}\" PG_DB=\"{PGDATABASE}\" PG_USER=\"{PGUSER}\" PG_PASS=\"{PGPASSWORD}\" "
     "&& python src/dashboard.py'",
 )
