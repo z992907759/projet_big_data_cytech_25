@@ -51,15 +51,6 @@ sbt run
 EX3:
 Créé avec le docker-compose.
 
-EX4:
-```bash
-cd ../ex04_dashboard
-# dashboard Streamlit (EX4)
-python src/dashboard.py
-# generation PDF (optionnel)
-python src/create_pdf.py
-```
-
 EX5 (local):
 ```bash
 cd ../ex05_ml_prediction_service
@@ -80,6 +71,13 @@ export MINIO_BUCKET_CLEAN="nyc-cleaned"
 export YEAR="2024"
 export MONTH="01"
 python -m pytest tests/test_pipeline.py
+```
+
+EX4:
+```bash
+cd ../ex04_dashboard
+# dashboard Streamlit (EX4)
+streamlit run src/dashboard.py
 ```
 
 FIN (depuis le dossier exercice 5) :
