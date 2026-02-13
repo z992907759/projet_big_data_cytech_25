@@ -94,6 +94,12 @@ Le fichier `docker-compose.airflow.yml` orchestre MinIO + Airflow.
 Les buckets MinIO sont crees automatiquement (plus besoin de création manuelle).
 Les fichiers Airflow de l'exercice sont dans `ex06_airflow/airflow/` (DAGs, logs, plugins).
 
+Pre-requis important:
+```bash
+# demarrer d'abord la stack de base (cree le reseau spark-network + postgres-db)
+docker compose up -d
+```
+
 Depuis la racine du repo:
 ```bash
 export PROJECT_DIR="$(pwd)"
@@ -106,15 +112,21 @@ UI Airflow:
 - login: `admin`
 - password: `admin`
 
-Declenchement du DAG EX6:
+Declenchement recommande (UI):
+- Ouvrir `http://localhost:8080`
+- Activer le DAG `ex6_pipeline`
+- Cliquer `Trigger DAG`
+- Suivre le statut des taches dans `Grid` / `Graph`
+
+Declenchement du DAG EX6 (CLI, optionnel):
 ```bash
-docker exec airflow-scheduler airflow dags trigger ex6_pipeline
+docker compose -f docker-compose.airflow.yml exec airflow-scheduler airflow dags trigger ex6_pipeline
 ```
 
-Suivi d'un run:
+Suivi d'un run (CLI, optionnel):
 ```bash
-docker exec airflow-scheduler airflow dags list-runs -d ex6_pipeline -o table
-docker exec airflow-scheduler airflow tasks states-for-dag-run ex6_pipeline <run_id>
+docker compose -f docker-compose.airflow.yml exec airflow-scheduler airflow dags list-runs -d ex6_pipeline -o table
+docker compose -f docker-compose.airflow.yml exec airflow-scheduler airflow tasks states-for-dag-run ex6_pipeline <run_id>
 ```
 
 ## Notes d'execution EX6
