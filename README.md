@@ -34,7 +34,7 @@ Acces MinIO:
 - Credentials par defaut: `minio` / `minio123`
 #### Il faudra pour le lancement manuel créer 2 buckets à nommer "nyc-raw" et "nyc-cleaned".
 
-## 2) Lancer EX1-EX5 manuellement (optionnel)
+## 2) Lancer EX1-EX5 manuellement (via la branche manual-version, ```git clone -b manual-version https://github.com/z992907759/BigData_projet.git```)
 
 EX1:
 ```bash
