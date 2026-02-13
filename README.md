@@ -96,15 +96,38 @@ Les fichiers Airflow de l'exercice sont dans `ex06_airflow/airflow/` (DAGs, logs
 
 Pre-requis important:
 ```bash
-# demarrer d'abord la stack de base (cree le reseau spark-network + postgres-db)
-docker compose up -d
+# demarrer explicitement les services de base requis par EX6
+docker compose up -d postgres spark-master spark-worker-1 spark-worker-2 minio
+
+```
+
+Initialisation des permissions (obligatoire sur Linux, recommande partout):
+```bash
+echo "AIRFLOW_UID=$(id -u)" > .env
+mkdir -p ex06_airflow/airflow/dags ex06_airflow/airflow/logs ex06_airflow/airflow/plugins
+sudo chown -R $(id -u):0 ex06_airflow/airflow/dags ex06_airflow/airflow/logs ex06_airflow/airflow/plugins
+sudo chmod -R 775 ex06_airflow/airflow/dags ex06_airflow/airflow/logs ex06_airflow/airflow/plugins
 ```
 
 Depuis la racine du repo:
 ```bash
 export PROJECT_DIR="$(pwd)"
 export AIRFLOW_DOCKER_NETWORK="bigdata_projet_spark-network"
+docker compose -f docker-compose.airflow.yml up airflow-init
 docker compose -f docker-compose.airflow.yml up -d
+```
+
+Verification rapide apres demarrage:
+```bash
+docker compose -f docker-compose.airflow.yml ps
+docker ps --filter name=postgres-db
+```
+
+Si `airflow-init` termine avec `exit 1`:
+```bash
+docker compose -f docker-compose.airflow.yml logs airflow-init
+docker compose -f docker-compose.airflow.yml down -v --remove-orphans
+docker compose -f docker-compose.airflow.yml up airflow-init
 ```
 
 UI Airflow:
