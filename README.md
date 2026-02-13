@@ -32,6 +32,7 @@ Acces MinIO:
 - API: `http://localhost:9000`
 - Console: `http://localhost:9001`
 - Credentials par defaut: `minio` / `minio123`
+#### Il faudra pour le lancement manuel créer 2 buckets à nommer "nyc-raw" et "nyc-cleaned".
 
 ## 2) Lancer EX1-EX5 manuellement (optionnel)
 
@@ -48,15 +49,11 @@ sbt run
 ```
 
 EX3:
-```bash
-cd ..
-docker exec -i postgres-db psql -U myuser -d taxidb < ex03_sql_table_creation/creation.sql
-docker exec -i postgres-db psql -U myuser -d taxidb < ex03_sql_table_creation/insertion.sql
-```
+Créé avec le docker-compose.
 
 EX4:
 ```bash
-cd ex04_dashboard
+cd ../ex04_dashboard
 # dashboard Streamlit (EX4)
 python src/dashboard.py
 # generation PDF (optionnel)
@@ -73,13 +70,30 @@ export MINIO_ENDPOINT="http://localhost:9000"
 export MINIO_ACCESS_KEY="minio"
 export MINIO_SECRET_KEY="minio123"
 python -m src.train
-python -m src.predict "{}"
+streamlit run streamlit_app/app.py
+```
+Test de qualité code :
+```bash
+flake8 --max-line-length=100 src/
+
+export MINIO_BUCKET_CLEAN="nyc-cleaned"
+export YEAR="2024"
+export MONTH="01"
+python -m pytest tests/test_pipeline.py
+```
+
+FIN (depuis le dossier exercice 5) :
+```bash
+deactivate
+rm -rf .venv/
+cd ..
+docker-compose down -v
 ```
 
 ## 3) EX6 - Pipeline automatise avec Airflow (recommande)
 
 Le fichier `docker-compose.airflow.yml` orchestre MinIO + Airflow.
-Les buckets MinIO sont crees automatiquement (plus besoin de creation manuelle).
+Les buckets MinIO sont crees automatiquement (plus besoin de création manuelle).
 Les fichiers Airflow de l'exercice sont dans `ex06_airflow/airflow/` (DAGs, logs, plugins).
 
 Depuis la racine du repo:
