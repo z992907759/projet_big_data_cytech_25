@@ -102,10 +102,12 @@ object Main {
     val jdbcUser = sys.env.getOrElse("JDBC_USER", "myuser")
     val jdbcPass = sys.env.getOrElse("JDBC_PASSWORD", "mypassword")
     val props = new Properties()
-    props.setProperty("user", jdbcUser); props.setProperty("password", jdbcPass); props.setProperty("driver", "org.postgresql.Driver")
+    props.setProperty("user", jdbcUser)
+    props.setProperty("password", jdbcPass)
+    props.setProperty("driver", "org.postgresql.Driver")
 
     def readTable(table: String): DataFrame = spark.read.jdbc(jdbcUrl, table, props)
-    def isNotEmpty(df: DataFrame): Boolean = df.take(1).nonEmpty
+    def isNotEmpty(df: DataFrame): Boolean = !df.isEmpty
 
     val existingVendor = readTable("dwh.dim_vendor").select($"vendor_id")
     val newVendor = cleanedDF.select($"VendorID".cast("int").as("vendor_id")).na.drop().distinct()
